@@ -4,6 +4,7 @@ interface Client {
   id: number;
   name: string;
   phone: string;
+
   offers: Offer[];
 }
 

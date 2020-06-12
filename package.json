@@ -5,6 +5,7 @@
   "main": "src/server.ts",
   "dependencies": {
     "@types/cors": "^2.8.6",
+    "@types/swagger-jsdoc": "^3.0.2",
     "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
     "class-transformer": "^0.2.3",
@@ -19,6 +20,7 @@
     "reflect-metadata": "^0.1.13",
     "slugify": "^1.4.0",
     "supertest": "^4.0.2",
+    "swagger-jsdoc": "^4.0.0",
     "ts-jest": "^25.4.0",
     "typeorm": "^0.2.24",
     "typeorm-seeding": "^1.6.1"

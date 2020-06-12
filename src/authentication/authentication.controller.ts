@@ -28,8 +28,62 @@ class AuthenticationController implements Controller {
   }
 
   private initializeRoutes() {
+    /**
+     * @swagger
+     * 
+     * /register:
+     *  post:
+     *    summary: Register
+     *    description: Register a new user to the application
+     *    tags:
+     *      - Authentication
+     *    requestBody:
+     *      content:
+     *        application/json:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              name:
+     *                type: string
+     *              email:
+     *                type: string
+     *              password:
+     *                type: string
+     */
     this.router.post(`${this.path}/register`, validationMiddleware(CreateUserDto), this.registration);
+
+    /**
+     * @swagger
+     * 
+     * /login:
+     *  post:
+     *    summary: Login
+     *    description: Log a new user using the given credentials
+     *    tags:
+     *      - Authentication
+     *    requestBody:
+     *      content:
+     *        application/json:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              email:
+     *                type: string
+     *              password:
+     *                type: string
+     */
     this.router.post(`${this.path}/login`, validationMiddleware(LogInDto), this.loggingIn);
+
+    /**
+     * @swagger
+     * 
+     * /logout:
+     *  post:
+     *    summary: Logout
+     *    description: Logout the currently logged user
+     *    tags:
+     *      - Authentication
+     */
     this.router.post(`${this.path}/logout`, this.loggingOut);
   }
 

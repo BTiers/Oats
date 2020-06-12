@@ -6,6 +6,8 @@ import App from './app';
 import * as ORMConfig from './ormconfig';
 import validateEnv from './utils/validateEnv';
 
+import DocumentationController from './documentation/documentation.controller';
+
 import AuthenticationController from './authentication/authentication.controller';
 import UserController from './user/user.controller';
 import ClientController from './client/client.controller';
@@ -24,16 +26,16 @@ validateEnv();
     console.log('Error while connecting to the database', error);
     return error;
   }
-  const app = new App(
-    [
-      new AuthenticationController(),
-      new UserController(),
-      new ClientController(),
-      new OfferController(),
-      new CandidateController(),
-      new AnalyticsController(),
-      new FTSController(),
-    ],
-  );
+  const app = new App([
+    new DocumentationController(),
+
+    new AuthenticationController(),
+    new UserController(),
+    new ClientController(),
+    new OfferController(),
+    new CandidateController(),
+    new AnalyticsController(),
+    new FTSController(),
+  ]);
   app.listen();
 })();

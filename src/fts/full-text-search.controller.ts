@@ -1,6 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { getRepository } from 'typeorm';
-import slugify from 'slugify';
+import { getRepository, Repository } from 'typeorm';
 
 import Controller from '../interfaces/controller.interface';
 
@@ -28,6 +27,18 @@ class FTSController implements Controller {
     this.router.get(`${this.path}/:search`, authMiddleware, this.getFTSMatches);
   }
 
+  private getFTS = async <T>(repository: Repository<T>, search: string): Promise<T[]> => {
+    return repository
+      .createQueryBuilder()
+      .select()
+      .limit(10)
+      .where('"documentWithWeights" @@ to_tsquery(:query)', {
+        query: `${search.trim().replace(/\s/g, ':* | ')}:*`,
+      })
+      .orderBy('ts_rank("documentWithWeights", to_tsquery(:query))', 'DESC')
+      .getMany();
+  };
+
   private getFTSMatches = async (request: Request, response: Response, next: NextFunction) => {
     const search = request.params.search;
 
@@ -37,45 +48,12 @@ class FTSController implements Controller {
     let users: User[] = [];
 
     if (search) {
-      clients = await this.clientRepository
-        .createQueryBuilder()
-        .select()
-        .limit(10)
-        .where('"documentWithWeights" @@ to_tsquery(:query)', {
-          query: `${(search as String).trim().replace(/\s/g, ':* | ')}:*`,
-        })
-        .orderBy('ts_rank("documentWithWeights", to_tsquery(:query))', 'DESC')
-        .getMany();
-
-      candidates = await this.candidateRepository
-        .createQueryBuilder()
-        .select()
-        .limit(10)
-        .where('"documentWithWeights" @@ to_tsquery(:query)', {
-          query: `${(search as String).trim().replace(/\s/g, ':* | ')}:*`,
-        })
-        .orderBy('ts_rank("documentWithWeights", to_tsquery(:query))', 'DESC')
-        .getMany();
-
-      offers = await this.offerRepository
-        .createQueryBuilder()
-        .select()
-        .limit(10)
-        .where('"documentWithWeights" @@ to_tsquery(:query)', {
-          query: `${(search as String).trim().replace(/\s/g, ':* | ')}:*`,
-        })
-        .orderBy('ts_rank("documentWithWeights", to_tsquery(:query))', 'DESC')
-        .getMany();
-
-      users = await this.userRepository
-        .createQueryBuilder()
-        .select()
-        .limit(10)
-        .where('"documentWithWeights" @@ to_tsquery(:query)', {
-          query: `${(search as String).trim().replace(/\s/g, ':* | ')}:*`,
-        })
-        .orderBy('ts_rank("documentWithWeights", to_tsquery(:query))', 'DESC')
-        .getMany();
+      [clients, candidates, offers, users] = await Promise.all([
+        this.getFTS(this.clientRepository, search),
+        this.getFTS(this.candidateRepository, search),
+        this.getFTS(this.offerRepository, search),
+        this.getFTS(this.userRepository, search),
+      ]);
     }
 
     response.send({ clients, users, candidates, offers });
