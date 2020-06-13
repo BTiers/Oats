@@ -17,7 +17,7 @@ import ProcessArchive from './archive/process-archive.entity';
 @Entity()
 class CandidateToOffer {
   @PrimaryGeneratedColumn()
-  public candidateToOfferId!: number;
+  public id!: number;
 
   @Column()
   public candidateId!: number;
