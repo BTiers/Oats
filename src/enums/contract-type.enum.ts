@@ -1,8 +1,8 @@
 enum ContractType {
-  WorkStudy = 'alternance',
-  Internship = 'stage',
-  Permanent = 'CDI',
-  FixedTerm = 'CDD',
+  WorkStudy = 'work_study',
+  Internship = 'internship',
+  Permanent = 'permanent',
+  FixedTerm = 'fixed',
 }
 
 export default ContractType;

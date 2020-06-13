@@ -29,7 +29,7 @@ class User {
   @Column()
   public email: string;
 
-  @Column()
+  @Column({ select: false })
   public password: string;
 
   @BeforeInsert()

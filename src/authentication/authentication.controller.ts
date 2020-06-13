@@ -30,8 +30,8 @@ class AuthenticationController implements Controller {
   private initializeRoutes() {
     /**
      * @swagger
-     * 
-     * /register:
+     *
+     * /authentication/register:
      *  post:
      *    summary: Register
      *    description: Register a new user to the application
@@ -49,13 +49,27 @@ class AuthenticationController implements Controller {
      *                type: string
      *              password:
      *                type: string
+     *    responses:
+     *      200:
+     *        description: The Created User
+     *        schema:
+     *          type: object
+     *          $ref: '#/definitions/User'
+     *      401:
+     *        description: Wrong Credentials Provided
+     *      500:
+     *        description: Internal Server Error
      */
-    this.router.post(`${this.path}/register`, validationMiddleware(CreateUserDto), this.registration);
+    this.router.post(
+      `${this.path}/register`,
+      validationMiddleware(CreateUserDto),
+      this.registration,
+    );
 
     /**
      * @swagger
-     * 
-     * /login:
+     *
+     * /authentication/login:
      *  post:
      *    summary: Login
      *    description: Log a new user using the given credentials
@@ -71,18 +85,31 @@ class AuthenticationController implements Controller {
      *                type: string
      *              password:
      *                type: string
+     *    responses:
+     *      200:
+     *        description: The logged in User
+     *        schema:
+     *          type: object
+     *          $ref: '#/definitions/User'
+     *      401:
+     *        description: Wrong Credentials Provided
+     *      500:
+     *        description: Internal Server Error
      */
     this.router.post(`${this.path}/login`, validationMiddleware(LogInDto), this.loggingIn);
 
     /**
      * @swagger
-     * 
-     * /logout:
+     *
+     * /authentication/logout:
      *  post:
      *    summary: Logout
      *    description: Logout the currently logged user
      *    tags:
      *      - Authentication
+     *    responses:
+     *      200:
+     *        description: Remove the HTTP-only cookie for client header
      */
     this.router.post(`${this.path}/logout`, this.loggingOut);
   }
@@ -100,7 +127,12 @@ class AuthenticationController implements Controller {
 
   private loggingIn = async (request: Request, response: Response, next: NextFunction) => {
     const logInData: LogInDto = request.body;
-    const user = await this.userRepository.findOne({ email: logInData.email });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .select()
+      .addSelect('user.password')
+      .where('user.email = :query', { query: logInData.email })
+      .getOne();
 
     if (user) {
       const isPasswordMatching = await bcrypt.compare(logInData.password, user.password);
@@ -109,6 +141,7 @@ class AuthenticationController implements Controller {
         const tokenData = this.authenticationService.createToken(user);
 
         response.setHeader('Set-Cookie', [this.authenticationService.createCookie(tokenData)]);
+        delete user.password;
         response.send(user);
       } else {
         next(new WrongCredentialsException());

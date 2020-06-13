@@ -18,6 +18,18 @@ class DocumentationController implements Controller {
       },
       host: 'localhost:3001',
       basePath: '/documentation',
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          }
+        }
+      },
+      security: [{
+        bearerAuth: []
+      }]
     },
     explorer: true,
     apis: ['**/*.ts'],
