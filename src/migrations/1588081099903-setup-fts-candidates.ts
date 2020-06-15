@@ -4,7 +4,7 @@ export class setupFtsCandidates1588081099903 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<any> {
     await queryRunner.query(`
         ALTER TABLE candidate
-            ADD COLUMN "documentWithWeights" tsvector;
+            ADD COLUMN IF NOT EXISTS "documentWithWeights" tsvector;
         UPDATE candidate
         
         SET "documentWithWeights" = setweight(to_tsvector(name), 'A') || setweight(to_tsvector(resume), 'B');

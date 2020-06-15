@@ -16,7 +16,7 @@ class DocumentationController implements Controller {
         version: '0.0.1',
         description: 'OATS API definition',
       },
-      host: 'localhost:3001',
+      host: process.env.DOMAIN,
       basePath: '/documentation',
       components: {
         securitySchemes: {

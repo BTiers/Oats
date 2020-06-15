@@ -4,7 +4,7 @@ export class setupFtsClients1588071386839 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<any> {
     await queryRunner.query(`
     ALTER TABLE client
-        ADD COLUMN "documentWithWeights" tsvector;
+        ADD COLUMN IF NOT EXISTS "documentWithWeights" tsvector;
     UPDATE client
     
     SET "documentWithWeights" = setweight(to_tsvector(name), 'A') || setweight(to_tsvector(phone), 'B');

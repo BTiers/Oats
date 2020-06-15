@@ -99,12 +99,16 @@ class ClientController implements Controller {
      *        description: Number of offers the client currently have
      */
 
-    this.router.get(`${this.path}`, [queryValidationMiddleware(FilterClientDto), authMiddleware], this.getAllClients);
+    this.router.get(
+      `${this.path}`,
+      [queryValidationMiddleware(FilterClientDto), authMiddleware],
+      this.getAllClients,
+    );
 
     /**
      * @swagger
-     * 
-     * /client/{slug}:
+     *
+     * /clients/{slug}:
      *  get:
      *    summary: Client by slug
      *    description: Get the client represented by the given slug
@@ -141,8 +145,8 @@ class ClientController implements Controller {
 
     /**
      * @swagger
-     * 
-     * /client:
+     *
+     * /clients:
      *  post:
      *    summary: Create a Client
      *    description: Create a Client with the provided informations
@@ -191,7 +195,47 @@ class ClientController implements Controller {
      *        schema:
      *          $ref: '#/definitions/HTTPError'
      */
-    this.router.post(`${this.path}`, [validationMiddleware(CreateClientDto), authMiddleware], this.postClient);
+    this.router.post(
+      `${this.path}`,
+      [validationMiddleware(CreateClientDto), authMiddleware],
+      this.postClient,
+    );
+
+        /**
+     * @swagger
+     *
+     * /clients/{slug}:
+     *  delete:
+     *    summary: Delete a Client
+     *    description: Delete the client represented by {slug}
+     *    security:
+     *      - bearerAuth: []
+     *    parameters:
+     *      - in: path
+     *        name: slug
+     *        schema:
+     *          type: string
+     *        required: true
+     *        description: Slug of the Client to delete
+     *    tags:
+     *      - Clients (Authenticated only)
+     *    responses:
+     *      200:
+     *        description: Client succesfully deleted
+     *      401:
+     *        description: Wrong authentication token
+     *        schema:
+     *          $ref: '#/definitions/HTTPError'
+     *      404:
+     *        description: No user found
+     *        schema:
+     *          $ref: '#/definitions/HTTPError'
+     *      500:
+     *        description: Internal Server Error
+     *        schema:
+     *          $ref: '#/definitions/HTTPError'
+     */
+    this.router.delete(`${this.path}/:slug`, authMiddleware, this.deleteClient);
   }
 
   private async buildQueryFromFilters(filterOptions: FilterClientDto) {
@@ -256,15 +300,11 @@ class ClientController implements Controller {
     });
 
     if (!client) {
-      let accountManager = undefined;
+      const accountManager = await this.userRepository.findOne({ slug: clientData.accountManager });
 
-      if (clientData.accountManager) {
-        accountManager = await this.userRepository.findOne({ slug: clientData.accountManager });
-
-        if (!accountManager) {
-          next(new UserNotFoundException(accountManager));
-          return;
-        }
+      if (!accountManager) {
+        next(new UserNotFoundException(clientData.accountManager));
+        return;
       }
 
       const newClient = this.clientRepository.create({
@@ -276,6 +316,19 @@ class ClientController implements Controller {
       await this.clientRepository.save(newClient);
       response.send(newClient);
     } else next(new ClientAlreadyExistsException(clientData.name, client));
+  };
+
+  private deleteClient = async (request: Request, response: Response, next: NextFunction) => {
+    const slug = request.params.slug;
+    const client = await this.clientRepository.findOne({ slug });
+
+    if (client) {
+      const result = await this.clientRepository.delete({ slug });
+      console.log(result)
+      response.status(200).send();
+    } else {
+      next(new ClientNotFoundException(slug));
+    }
   };
 }
 
