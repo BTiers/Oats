@@ -2,12 +2,12 @@
 
 Setup:
 
-*Install needed dependencies*
-> **npm install**
+*Install docker & docker-compose dependencies*
 
-*Launch the server on port 3001*
+*Launch server & database containers*
+> sudo docker-compose up
 
-> **npm run dev**
+That's it !
 
 # Documentation
 
