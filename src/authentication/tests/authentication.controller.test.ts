@@ -1,5 +1,6 @@
 import * as request from 'supertest';
 import * as typeorm from 'typeorm';
+
 import App from '../../app';
 import CreateUserDto from '../../user/user.dto';
 import AuthenticationController from '../authentication.controller';
@@ -16,6 +17,7 @@ describe('The AuthenticationController', () => {
           password: 'strongPassword123',
         };
         process.env.JWT_SECRET = 'jwt_secret';
+
         (typeorm as any).getRepository.mockReturnValue({
           findOne: () => Promise.resolve(undefined),
           create: () => ({
@@ -24,10 +26,13 @@ describe('The AuthenticationController', () => {
           }),
           save: () => Promise.resolve(),
         });
+
         const authenticationController = new AuthenticationController();
+
         const app = new App([
           authenticationController,
         ]);
+
         return request(app.getServer())
           .post(`${authenticationController.path}/register`)
           .send(userData)
