@@ -139,6 +139,17 @@ class OfferController implements Controller {
      *    description: Get a list of all offers
      *    security:
      *      - bearerAuth: []
+     *    parameters:
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    tags:
      *      - Offers (Authenticated only)
      *    responses:
@@ -177,6 +188,16 @@ class OfferController implements Controller {
      *          type: string
      *        required: true
      *        description: Slug of the Offer to get
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    responses:
      *      200:
      *        description: Offer with {slug}

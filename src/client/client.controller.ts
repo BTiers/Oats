@@ -123,6 +123,16 @@ class ClientController implements Controller {
      *          type: string
      *        required: true
      *        description: Slug of the Client to get
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    responses:
      *      200:
      *        description: Client with {slug}
@@ -152,6 +162,17 @@ class ClientController implements Controller {
      *    description: Create a Client with the provided informations
      *    security:
      *      - bearerAuth: []
+     *    parameters:
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    tags:
      *      - Clients (Authenticated only)
      *    requestBody:
@@ -217,6 +238,16 @@ class ClientController implements Controller {
      *          type: string
      *        required: true
      *        description: Slug of the Client to delete
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    tags:
      *      - Clients (Authenticated only)
      *    responses:

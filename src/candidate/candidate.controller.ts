@@ -140,6 +140,17 @@ class CandidateController implements Controller {
      *      - bearerAuth: []
      *    tags:
      *      - Candidates (Authenticated only)
+     *    parameters:
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    responses:
      *      200:
      *        description: All the candidates
@@ -176,6 +187,16 @@ class CandidateController implements Controller {
      *          type: string
      *        required: true
      *        description: Slug of the Candidate to get
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    responses:
      *      200:
      *        description: Candidate with {slug}

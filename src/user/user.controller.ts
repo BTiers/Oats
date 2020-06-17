@@ -110,6 +110,17 @@ class UserController implements Controller {
      *    description: Get the complete list of registered users
      *    security:
      *      - bearerAuth: []
+     *    parameters:
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    tags:
      *      - Users (Authenticated only)
      *    responses:
@@ -133,6 +144,17 @@ class UserController implements Controller {
      *  get:
      *    summary: Current User
      *    description: Get the currently logged in user
+     *    parameters:
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    security:
      *      - bearerAuth: []
      *    tags:
@@ -168,6 +190,16 @@ class UserController implements Controller {
      *          type: string
      *        required: true
      *        description: Slug of the User to get
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    responses:
      *      200:
      *        description: User with {slug}

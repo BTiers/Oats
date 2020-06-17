@@ -145,6 +145,17 @@ class AuthenticationController implements Controller {
      *  get:
      *    summary: Refresh token
      *    description: Refresh the current XSRF-Token
+     *    parameters:
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie 
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
      *    tags:
      *      - Authentication
      *    responses:
