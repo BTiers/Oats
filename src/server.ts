@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import 'reflect-metadata';
-import { createConnection } from 'typeorm';
+import { createConnection, getRepository } from 'typeorm';
 
 import App from './app';
 import * as ORMConfig from './ormconfig';
@@ -20,8 +20,7 @@ validateEnv();
 
 (async () => {
   try {
-    const connection = await createConnection(ORMConfig);
-    await connection.runMigrations();
+    await createConnection(ORMConfig);
   } catch (error) {
     console.log('Error while connecting to the database', error);
     return error;

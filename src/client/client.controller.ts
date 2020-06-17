@@ -201,7 +201,7 @@ class ClientController implements Controller {
       this.postClient,
     );
 
-        /**
+    /**
      * @swagger
      *
      * /clients/{slug}:
