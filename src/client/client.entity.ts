@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 
 import slugify from 'slugify';
+
 import Offer from '../offer/offer.entity';
 import User from '../user/user.entity';
 

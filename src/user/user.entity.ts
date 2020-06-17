@@ -9,8 +9,9 @@ import {
   Unique,
   RelationCount,
 } from 'typeorm';
+
 import slugify from 'slugify';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 import Offer from '../offer/offer.entity';
 import Client from '../client/client.entity';
@@ -18,7 +19,7 @@ import Candidate from '../candidate/candidate.entity';
 import Interview from '../candidate/interview/interview.entity';
 
 @Entity()
-@Unique(['name', 'slug'])
+@Unique(['name', 'email', 'slug'])
 class User {
   @PrimaryGeneratedColumn()
   public id: number;
@@ -63,10 +64,10 @@ class User {
   @RelationCount((user: User) => user.candidates)
   public candidateCount: number;
 
-  @OneToMany((type) => Interview, (interview) => interview.recruiter)
+  @OneToMany(() => Interview, (interview) => interview.recruiter)
   public interviews!: Interview[];
 
-  @Column("tsvector", { select: false })
+  @Column('tsvector', { select: false })
   documentWithWeights: any;
 
   @CreateDateColumn()

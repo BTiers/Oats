@@ -3,8 +3,9 @@ import * as jwt from 'jsonwebtoken';
 import { getRepository } from 'typeorm';
 
 import UserWithThatEmailAlreadyExistsException from '../exceptions/UserWithThatEmailAlreadyExistsException';
-import DataStoredInToken from '../interfaces/dataStoredInToken';
-import TokenData from '../interfaces/tokenData.interface';
+
+import { XSRFTokenData, Token, RefreshTokenData } from '../interfaces/token.interface';
+
 import CreateUserDto from '../user/user.dto';
 import User from '../user/user.entity';
 
@@ -21,27 +22,55 @@ class AuthenticationService {
 
     await this.userRepository.save(user);
 
-    const tokenData = this.createToken(user);
-    const cookie = this.createCookie(tokenData);
+    const xsrfToken = this.createXSRFToken();
+    const refreshToken = this.createRefreshToken(user, xsrfToken);
+
+    const cookie = this.createCookie(refreshToken);
     return {
       cookie,
+      token: xsrfToken,
       user,
     };
   }
 
-  public createCookie(tokenData: TokenData) {
+  public createCookie(tokenData: Token) {
     return `Authorization=${tokenData.token}; PATH=/; HttpOnly; Max-Age=${tokenData.expiresIn}`;
   }
 
-  public createToken(user: User): TokenData {
-    const expiresIn = 60 * 60 * 24; // a day
-    const secret = process.env.JWT_SECRET;
-    const dataStoredInToken: DataStoredInToken = {
-      id: user.id,
+  public createRefreshToken(user: User, xsrfToken: Token): Token {
+    const expiresIn = 60 * 60 * 24 * 5; // 5 days
+    const refreshTokenData: RefreshTokenData = {
+      xsrfToken: xsrfToken.token,
+      _exp: expiresIn,
+      sub: user.id,
     };
+
     return {
       expiresIn,
-      token: jwt.sign(dataStoredInToken, secret, { expiresIn }),
+      token: jwt.sign(refreshTokenData, process.env.JWT_SECRET, { expiresIn }),
+    };
+  }
+
+  public updateRefreshToken(refreshToken: RefreshTokenData & { exp: number }, xsrfToken: Token): Token {
+    const refreshTokenData: RefreshTokenData = {
+      sub: refreshToken.sub,
+      _exp: refreshToken._exp,
+      xsrfToken: xsrfToken.token,
+    };
+
+    return {
+      expiresIn: refreshToken._exp,
+      token: jwt.sign(refreshTokenData, process.env.JWT_SECRET, { expiresIn: refreshToken.exp }),
+    };
+  }
+
+  public createXSRFToken(): Token {
+    const expiresIn = 60 * 15; // 15 minutes
+    const xsrfData: XSRFTokenData = {};
+
+    return {
+      expiresIn,
+      token: jwt.sign(xsrfData, process.env.JWT_SECRET, { expiresIn }),
     };
   }
 }
