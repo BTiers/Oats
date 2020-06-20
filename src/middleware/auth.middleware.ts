@@ -5,8 +5,8 @@ import { getRepository } from 'typeorm';
 import AuthenticationTokenMissingException from '../exceptions/AuthenticationTokenMissingException';
 import WrongAuthenticationTokenException from '../exceptions/WrongAuthenticationTokenException';
 
-import { RefreshTokenData } from '../interfaces/token.interface';
-import RequestWithUser from '../interfaces/requestWithUser.interface';
+import { RefreshTokenData } from '../shared/interfaces/token.interface';
+import RequestWithUser from '../shared/interfaces/request-with-user.interface';
 
 import User from '../user/user.entity';
 

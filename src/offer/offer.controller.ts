@@ -1,14 +1,25 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { getRepository } from 'typeorm';
+import { getRepository, FindManyOptions, Not } from 'typeorm';
+import { plainToClass } from 'class-transformer';
 
-import Controller from '../interfaces/controller.interface';
+import Controller from '../shared/interfaces/controller.interface';
+import { PaginationMetadata } from '../shared/interfaces/pagination.interface';
 
 import authMiddleware from '../middleware/auth.middleware';
+import queryValidationMiddleware from '../middleware/query-validation.middleware';
 
 import Offer from './offer.entity';
+import { FilterOfferParams } from './offer.dto';
 
 import OfferNotFoundException from '../exceptions/OfferNotFoundException';
 import NoOffersFoundException from '../exceptions/NoOffersFoundException';
+import ExceededPageIndexException from '../exceptions/ExceededPageIndexException';
+
+import {
+  getFilter,
+  StringFilterParam,
+  NumberFilterParam,
+} from '../shared/validators/filters.validator';
 
 class OfferController implements Controller {
   public path = '/offers';
@@ -132,7 +143,7 @@ class OfferController implements Controller {
 
     /**
      * @swagger
-     * 
+     *
      * /offers:
      *  get:
      *    summary: All Offers
@@ -140,10 +151,24 @@ class OfferController implements Controller {
      *    security:
      *      - bearerAuth: []
      *    parameters:
+     *      - in: query
+     *        name: page
+     *        schema:
+     *          type: integer
+     *          default: 0
+     *        description: The page position (page * perPage).
+     *      - in: query
+     *        name: perPage
+     *        schema:
+     *          type: integer
+     *          minimum: 1
+     *          maximum: 100
+     *          default: 20
+     *        description: The number of items retrieved on each pages.
      *      - in: header
      *        name: Authorization
      *        schema:
-     *          description: The server set HTTPOnly cookie 
+     *          description: The server set HTTPOnly cookie
      *          type: string
      *      - in: header
      *        name: x-xsrf-token
@@ -168,11 +193,15 @@ class OfferController implements Controller {
      *        schema:
      *          $ref: '#/definitions/HTTPError'
      */
-    this.router.get(`${this.path}`, authMiddleware, this.getAllOffers);
+    this.router.get(
+      `${this.path}`,
+      [authMiddleware, queryValidationMiddleware(FilterOfferParams)],
+      this.getAllOffers,
+    );
 
     /**
      * @swagger
-     * 
+     *
      * /offers/{slug}:
      *  get:
      *    summary: Offer by slug
@@ -191,7 +220,7 @@ class OfferController implements Controller {
      *      - in: header
      *        name: Authorization
      *        schema:
-     *          description: The server set HTTPOnly cookie 
+     *          description: The server set HTTPOnly cookie
      *          type: string
      *      - in: header
      *        name: x-xsrf-token
@@ -234,13 +263,81 @@ class OfferController implements Controller {
     }
   };
 
+  private removeEmpty = <T>(obj: FindManyOptions<T>): FindManyOptions<T> =>
+    Object.fromEntries(
+      Object.entries(obj)
+        .filter(([k, v]) => v !== undefined)
+        .map(([k, v]) => (typeof v === 'object' && !v._type ? [k, this.removeEmpty(v)] : [k, v]))
+        .filter(([k, v]) => Object.keys(v).length),
+    );
+
+  private buildFieldsOptions = (filters: FilterOfferParams): FindManyOptions<Offer> => {
+    const { job, annualSalary, contractType } = filters;
+    const { order } = filters;
+
+    const options: FindManyOptions<Offer> = {
+      where: {
+        job: getFilter(plainToClass(StringFilterParam, job)),
+        annualSalary: getFilter(plainToClass(NumberFilterParam, annualSalary)),
+        contractType: getFilter(plainToClass(StringFilterParam, contractType)),
+      },
+      order: order,
+    };
+
+    return this.removeEmpty(options);
+  };
+
   private getAllOffers = async (request: Request, response: Response, next: NextFunction) => {
-    const offers = await this.offerRepository.find({ relations: ['owner', 'referrer'] });
+    let { perPage = 20, page = 0 } = request.query; // Pagination related queryParams
+    //    const { q: fullTextSearch } = request.query; // Full text search related query Params
+
+    perPage = Number(perPage);
+    page = Number(page);
+
+    const take = perPage;
+    const skip = page * take;
+
+    const filterOptions = this.buildFieldsOptions((request.query as unknown) as FilterOfferParams);
+
+    const total = await this.offerRepository.count(filterOptions);
+    const pageCount = Math.ceil(total / take);
+
+    if (total === 0) return next(new NoOffersFoundException('No offers are available'));
+
+    if (page > pageCount)
+      return next(
+        new ExceededPageIndexException(
+          `Page n°${page} cannot be found with ${perPage} items per page.
+          Last available page can be retrieved here:
+          /offers?page=${pageCount - 1}&perPage=${perPage}`,
+        ),
+      );
+
+    const offers = await this.offerRepository.find({
+      relations: ['owner', 'referrer'],
+      ...filterOptions,
+      take,
+      skip,
+    });
 
     if (offers && offers.length) {
-      response.send(offers);
+      const metadata: PaginationMetadata = {
+        page: page,
+        perPage: take,
+        pageCount,
+        totalItems: total,
+        links: {
+          self: `/offers?page=${page}&perPage=${perPage}`,
+          first: `/offers?page=0&perPage=${perPage}`,
+          previous: page === 0 ? null : `/offers?page=${page - 1}&perPage=${perPage}`,
+          next: page + 1 >= pageCount ? null : `/offers?page=${page + 1}&perPage=${perPage}`,
+          last: `/offers?page=${pageCount > 0 ? pageCount - 1 : pageCount}&perPage=${perPage}`,
+        },
+      };
+
+      response.send({ offers, metadata });
     } else {
-      next(new NoOffersFoundException());
+      next(new NoOffersFoundException('No offers are available with current filters'));
     }
   };
 }

@@ -15,7 +15,7 @@ import slugify from 'slugify';
 import User from '../user/user.entity';
 import Client from '../client/client.entity';
 import CandidateToOffer from '../candidate/offer/candidate-to-offer.entity';
-import ContractType from '../enums/contract-type.enum';
+import Contract from '../shared/enums/contract.enum';
 
 @Entity()
 @Unique(['slug'])
@@ -38,8 +38,8 @@ class Offer {
   public annualSalary: number;
 
   @Column({
-    enum: ContractType,
-    default: ContractType.Permanent,
+    enum: Contract,
+    default: Contract.Permanent,
   })
   public contractType: string;
 

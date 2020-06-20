@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';
 import slugify from 'slugify';
 
-import Controller from '../interfaces/controller.interface';
+import Controller from '../shared/interfaces/controller.interface';
 
 import authMiddleware from '../middleware/auth.middleware';
 import validationMiddleware from '../middleware/validation.middleware';
@@ -17,10 +17,9 @@ import criteriaToSQL from '../shared/criteria-to-sql';
 import { CreateClientDto, FilterClientDto } from './client.dto';
 
 import ClientNotFoundException from '../exceptions/ClientNotFoundException';
-import NoClientFoundException from '../exceptions/NoClientsFoundException';
 import UserNotFoundException from '../exceptions/UserNotFoundException';
 import ClientAlreadyExistsException from '../exceptions/ClientAlreadyExistsException';
-import FilterType from 'enums/filter-options.enum';
+import FilterType from '../enums/filter-options.enum';
 
 class ClientController implements Controller {
   public path = '/clients';

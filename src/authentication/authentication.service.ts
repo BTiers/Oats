@@ -4,7 +4,7 @@ import { getRepository } from 'typeorm';
 
 import UserWithThatEmailAlreadyExistsException from '../exceptions/UserWithThatEmailAlreadyExistsException';
 
-import { XSRFTokenData, Token, RefreshTokenData } from '../interfaces/token.interface';
+import { XSRFTokenData, Token, RefreshTokenData } from '../shared/interfaces/token.interface';
 
 import CreateUserDto from '../user/user.dto';
 import User from '../user/user.entity';
@@ -65,7 +65,7 @@ class AuthenticationService {
   }
 
   public createXSRFToken(): Token {
-    const expiresIn = 60 * 15; // 15 minutes
+    const expiresIn = 60 * 60; // 60 minutes FIXME Too long but get tires of refreshing IT every 15 minutes x)
     const xsrfData: XSRFTokenData = {};
 
     return {

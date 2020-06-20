@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';
 
-import Controller from '../interfaces/controller.interface';
+import Controller from '../shared/interfaces/controller.interface';
 
 import authMiddleware from '../middleware/auth.middleware';
 

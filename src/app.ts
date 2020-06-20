@@ -4,7 +4,7 @@ import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as cors from 'cors';
 
-import Controller from './interfaces/controller.interface';
+import Controller from './shared/interfaces/controller.interface';
 import errorMiddleware from './middleware/error.middleware';
 
 class App {
