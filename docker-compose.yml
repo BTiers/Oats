@@ -3,7 +3,7 @@ services:
   # Oats Database
   oats_psql:
     container_name: oats_psql
-    image: postgres:11.1-alpine
+    image: postgres:12-alpine
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER?}
