@@ -19,10 +19,15 @@ export default function getFilterParams(url: string, prefix: string, params?: st
   result = result.replace(/\A?perPage=[^&]+&*/g, '');
   result = result.replace(new RegExp(`${prefix}[?]?`, 'gm'), '');
 
-  params?.forEach((param) => (result = result.replace(new RegExp(`\A?${param}=[^&]+&*`, 'g'), '')));
+  params?.forEach((param) => {
+    result = result.replace(
+      new RegExp(`\A?${param.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}=[^&]+&*`, 'g'),
+      '',
+    );
+  });
 
   if (result[result.length - 1] === '&') result = result.substring(0, result.length - 1);
 
-  if (result === '') return result
+  if (result === '') return result;
   return `&${result}`;
 }

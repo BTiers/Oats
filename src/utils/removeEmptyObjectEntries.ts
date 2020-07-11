@@ -1,6 +1,4 @@
-import { FindManyOptions } from 'typeorm';
-
-export default function removeEmpty<T>(obj: FindManyOptions<T>): FindManyOptions<T> {
+export default function removeEmpty<T>(obj: T): T {
   return Object.fromEntries(
     Object.entries(obj)
       .filter(([_, v]) => v !== undefined)
