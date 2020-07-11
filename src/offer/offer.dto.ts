@@ -27,7 +27,7 @@ class OfferOrderParams {
   public contractType: Order;
 }
 
-export class FilterOfferParams extends Pagination {
+export class OfferFilterParams extends Pagination {
   @IsOptional()
   @ValidateNested()
   @Type(() => StringFilterParam)

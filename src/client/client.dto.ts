@@ -1,8 +1,17 @@
-import { IsString, IsPhoneNumber, ValidateNested, IsDefined } from 'class-validator';
-
-import { FilterOptionString, FilterOptionInteger } from '../shared/filter-validators';
+import {
+  IsString,
+  IsPhoneNumber,
+  ValidateNested,
+  IsDefined,
+  IsEnum,
+  IsOptional,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
+import { Order } from '../shared/enums/order.enum';
+import { Pagination } from '../shared/validators/pagination.validator';
+import { StringFilterParam } from '../shared/validators/filters.validator';
+import { UserFilterParam } from '../shared/validators/user.validator';
 
 export class CreateClientDto {
   @IsDefined()
@@ -18,12 +27,25 @@ export class CreateClientDto {
   public accountManager!: string;
 }
 
-export class FilterClientDto {
-  @ValidateNested()
-  @Type(() => FilterOptionString)
-  public name: FilterOptionString;
+class ClientOrderParams {
+  @IsOptional()
+  @IsEnum(Order)
+  public name: Order;
+}
 
+export class ClientFilterParams extends Pagination {
+  @IsOptional()
   @ValidateNested()
-  @Type(() => FilterOptionString)
-  public phone: FilterOptionString;
+  @Type(() => StringFilterParam)
+  public name: StringFilterParam;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UserFilterParam)
+  public accountManager: UserFilterParam;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ClientOrderParams)
+  public order: ClientOrderParams;
 }

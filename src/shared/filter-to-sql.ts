@@ -1,5 +1,10 @@
 import FilterType from '../enums/filter-options.enum';
-
+/**
+ * Use to create SQL statement based on query arguments
+ * @param filter - The type of filter requested
+ * @param index - A unique identifier use to make criteria name unique
+ * @deprecated Prefer using dedicated DTOs
+ */
 export default function filterToSQL(filter: FilterType, index: Number): String {
   switch (filter) {
     case FilterType.Equal:

@@ -23,7 +23,7 @@
     "slugify": "^1.4.0",
     "supertest": "^4.0.2",
     "swagger-jsdoc": "^4.0.0",
-    "ts-jest": "^25.4.0",
+    "ts-jest": "^26.1.1",
     "typeorm": "^0.2.25",
     "typeorm-seeding": "^1.6.1"
   },

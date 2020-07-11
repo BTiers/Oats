@@ -1,8 +1,8 @@
 import HttpException from './HttpException';
 
 class NoCandidatesFoundException extends HttpException {
-  constructor() {
-    super(404, 'No candidates found');
+  constructor(hint?: string) {
+    super(404, 'No candidates found', hint);
   }
 }
 
