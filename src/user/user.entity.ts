@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 
 import slugify from 'slugify';
+import * as shortid from 'shortid';
 import * as bcrypt from 'bcryptjs';
 
 import Offer from '../offer/offer.entity';
@@ -19,13 +20,16 @@ import Candidate from '../candidate/candidate.entity';
 import Interview from '../candidate/interview/interview.entity';
 
 @Entity()
-@Unique(['name', 'email', 'slug'])
+@Unique(['email', 'slug'])
 class User {
   @PrimaryGeneratedColumn()
   public id: number;
 
   @Column()
-  public name: string;
+  public firstName: string;
+
+  @Column()
+  public lastName: string;
 
   @Column()
   public email: string;
@@ -43,7 +47,9 @@ class User {
 
   @BeforeInsert()
   generateSlug() {
-    this.slug = slugify(this.name, { lower: true });
+    this.slug = slugify(`${this.firstName}-${this.lastName}-${shortid.generate()}`, {
+      lower: true,
+    });
   }
 
   @OneToMany(() => Offer, (offer: Offer) => offer.referrer)

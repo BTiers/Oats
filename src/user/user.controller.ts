@@ -32,15 +32,18 @@ class UserController implements Controller {
      *      id:
      *        type: number
      *        description: Database identifier of the user
-     *      name:
+     *      firstName:
      *        type: string
-     *        description: Complete name of the user
+     *        description: Firstname of the user
+     *      lastName:
+     *        type: string
+     *        description: Lastname of the user
      *      email:
      *        type: string
      *        description: Email of the user
      *      slug:
      *        type: string
-     *        description: Serverside generated slug
+     *        description: Serverside generated slug (eg: firstname-lastname-shortid)
      *      createdDate:
      *        type: string
      *        description: Creation date of the user, can be parsed into a JS Date object
@@ -67,15 +70,18 @@ class UserController implements Controller {
      *      id:
      *        type: number
      *        description: Database identifier of the user
-     *      name:
+     *      firstName:
      *        type: string
-     *        description: Complete name of the user
+     *        description: Firstname of the user
+     *      lastName:
+     *        type: string
+     *        description: Lastname of the user
      *      email:
      *        type: string
      *        description: Email of the user
      *      slug:
      *        type: string
-     *        description: Serverside generated slug
+     *        description: Serverside generated slug (eg: firstname-lastname-shortid)
      *      createdDate:
      *        type: string
      *        description: Creation date of the user, can be parsed into a JS Date object

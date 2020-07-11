@@ -9,8 +9,8 @@ export class setupFtsOffers1588081107104 implements MigrationInterface {
         
         SET "documentWithWeights" = setweight(to_tsvector(job), 'A') || setweight(to_tsvector("contractType"), 'B');
     
-        CREATE INDEX offer_document_weights_idx ON offer USING GIN ("documentWithWeights");
-        CREATE FUNCTION offer_tsvector_trigger() RETURNS trigger AS $$
+        CREATE INDEX IF NOT EXISTS offer_document_weights_idx ON offer USING GIN ("documentWithWeights");
+        CREATE OR REPLACE FUNCTION offer_tsvector_trigger() RETURNS trigger AS $$
             begin
                 new."documentWithWeights" := 
                     setweight(to_tsvector('english', coalesce(new.job, '')), 'A') ||

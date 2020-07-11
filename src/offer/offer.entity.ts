@@ -50,7 +50,7 @@ class Offer {
   @ManyToOne(() => Client, (owner: Client) => owner.offers)
   public owner: Client;
 
-  @OneToMany((type) => CandidateToOffer, (candidateToOffer) => candidateToOffer.offer)
+  @OneToMany(() => CandidateToOffer, (candidateToOffer) => candidateToOffer.offer)
   public candidates!: CandidateToOffer[];
 
   @RelationCount((offer: Offer) => offer.candidates)
