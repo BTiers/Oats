@@ -91,13 +91,13 @@ export class NumberFilterParam {
  * @description Return a new class setup to validate on the passed enumeration type
  * @example
  * // Create your EnumFilter
- * const YourEnumFiler = createEnumFilterParam<YourEnum>(YourEnum);
+ * const YourEnumFilter = createEnumFilterParam<YourEnum>(YourEnum);
  *
  * // Use it like this
  * // Note: Backticks are used to prevent JSDoc for badly parsing the decorators, remove them in your code
  * `@IsOptional()`
  * `@ValidateNested()`
- * `@Type(() => ContractFilterParam)`
+ * `@Type(() => YourEnumFilter)`
  * public contractType: any;
  */
 export function createEnumFilterParam<T>(type: Object) {

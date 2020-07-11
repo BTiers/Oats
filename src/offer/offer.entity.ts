@@ -15,6 +15,7 @@ import slugify from 'slugify';
 import User from '../user/user.entity';
 import Client from '../client/client.entity';
 import CandidateToOffer from '../candidate/offer/candidate-to-offer.entity';
+
 import Contract from '../shared/enums/contract.enum';
 
 @Entity()

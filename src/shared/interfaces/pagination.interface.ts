@@ -1,3 +1,28 @@
+/**
+ * @swagger
+ * definitions:
+ *  PaginationMetadataLinks:
+ *    description: All links include the same query parameters that were passed
+ *    properties:
+ *      self:
+ *        type: string
+ *        description: Requested route url
+ *      first:
+ *        type: string
+ *        description: First page route url
+ *      previous:
+ *        type: string
+ *        nullable: true
+ *        description: Previous page route url
+ *      next:
+ *        type: string
+ *        nullable: true
+ *        description: Next page route url
+ *      last:
+ *        type: string
+ *        nullable: true
+ *        description: Last page route url
+ */
 interface PaginationLinks {
   self: string;
   first: string;
@@ -6,6 +31,26 @@ interface PaginationLinks {
   last: string;
 }
 
+/**
+ * @swagger
+ * definitions:
+ *  PaginationMetadata:
+ *    properties:
+ *      page:
+ *        type: number
+ *        description: The current page
+ *      perPage:
+ *        type: number
+ *        description: Number of requested items per page
+ *      pageCount:
+ *        type: number
+ *        description: Total number of page given the current configuration
+ *      totalItems:
+ *        type: number
+ *        description: Total number of items given the current configuration
+ *      links:
+ *        $ref: '#/definitions/PaginationMetadataLinks'
+ */
 export interface PaginationMetadata {
   page: number;
   perPage: number;
