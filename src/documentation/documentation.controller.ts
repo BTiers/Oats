@@ -3,7 +3,7 @@ import { getRepository } from 'typeorm';
 
 import * as swaggerJSDoc  from 'swagger-jsdoc';
 
-import Controller from '../interfaces/controller.interface';
+import Controller from '../shared/interfaces/controller.interface';
 
 class DocumentationController implements Controller {
   public path = '/documentation';

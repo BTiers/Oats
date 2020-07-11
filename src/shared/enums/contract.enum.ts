@@ -1,8 +1,8 @@
-enum ContractType {
+enum Contract {
   WorkStudy = 'work_study',
   Internship = 'internship',
   Permanent = 'permanent',
   FixedTerm = 'fixed',
 }
 
-export default ContractType;
+export default Contract;

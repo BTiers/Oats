@@ -5,10 +5,10 @@ import * as jwt from 'jsonwebtoken';
 
 import { getRepository } from 'typeorm';
 
-import Controller from '../interfaces/controller.interface';
+import Controller from '../shared/interfaces/controller.interface';
+import { RefreshTokenData } from '../shared/interfaces/token.interface';
 
 import validationMiddleware from '../middleware/validation.middleware';
-import authMiddleware from '../middleware/auth.middleware';
 
 import AuthenticationService from './authentication.service';
 
@@ -21,7 +21,6 @@ import WrongCredentialsException from '../exceptions/WrongCredentialsException';
 import AuthenticationTokenMissingException from '../exceptions/AuthenticationTokenMissingException';
 import WrongAuthenticationTokenException from '../exceptions/WrongAuthenticationTokenException';
 
-import { RefreshTokenData } from '../interfaces/token.interface';
 
 class AuthenticationController implements Controller {
   public path = '/authentication';

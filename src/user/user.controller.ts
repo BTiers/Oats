@@ -1,7 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';
 
-import Controller from '../interfaces/controller.interface';
+import Controller from '../shared/interfaces/controller.interface';
+import RequestWithUser from '../shared/interfaces/request-with-user.interface';
 
 import authMiddleware from '../middleware/auth.middleware';
 
@@ -10,7 +11,6 @@ import User from './user.entity';
 import UserNotFoundException from '../exceptions/UserNotFoundException';
 import NoUsersFoundException from '../exceptions/NoUsersFoundException';
 
-import RequestWithUser from 'interfaces/requestWithUser.interface';
 
 class UserController implements Controller {
   public path = '/users';
