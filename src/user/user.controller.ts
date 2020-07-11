@@ -43,7 +43,7 @@ class UserController implements Controller {
      *        description: Email of the user
      *      slug:
      *        type: string
-     *        description: Serverside generated slug (eg: firstname-lastname-shortid)
+     *        description: "Serverside generated slug (eg: firstname-lastname-shortid)"
      *      createdDate:
      *        type: string
      *        description: Creation date of the user, can be parsed into a JS Date object
@@ -81,7 +81,7 @@ class UserController implements Controller {
      *        description: Email of the user
      *      slug:
      *        type: string
-     *        description: Serverside generated slug (eg: firstname-lastname-shortid)
+     *        description: "Serverside generated slug (eg: firstname-lastname-shortid)"
      *      createdDate:
      *        type: string
      *        description: Creation date of the user, can be parsed into a JS Date object
