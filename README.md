@@ -11,7 +11,7 @@ That's it !
 
 # Documentation
 
-When running the server visit **localhost:3001/documentation/latest** to get the latest available version of the documentation
+When running the server visit **localhost:8080/documentation/latest** to get the latest available version of the documentation
 
 # Roadmap
 
