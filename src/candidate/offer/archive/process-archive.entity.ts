@@ -16,7 +16,7 @@ class ProcessArchive {
   @PrimaryGeneratedColumn()
   public id: string;
 
-  @ManyToOne((type) => CandidateToOffer, (candidateToOffer) => candidateToOffer.archives)
+  @ManyToOne(() => CandidateToOffer, (candidateToOffer) => candidateToOffer.archives)
   public process: CandidateToOffer;
 
   @Column({ enum: ProcessStatus })

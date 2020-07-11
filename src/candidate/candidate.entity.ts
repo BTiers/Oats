@@ -42,20 +42,20 @@ class Candidate {
   @Column()
   public resume: string;
 
-  @ManyToOne((type) => User, (user) => user.candidates)
+  @ManyToOne(() => User, (user) => user.candidates)
   public referrer: User;
 
-  @OneToMany((type) => CandidateToOffer, (candidateToOffer) => candidateToOffer.candidate)
+  @OneToMany(() => CandidateToOffer, (candidateToOffer) => candidateToOffer.candidate)
   public processes!: CandidateToOffer[];
 
   @RelationCount((candidate: Candidate) => candidate.processes)
   public processCount: number;
 
-  @OneToOne((type) => Qualification)
+  @OneToOne(() => Qualification)
   @JoinColumn()
   public qualification!: Qualification;
 
-  @OneToMany((type) => Interview, (interview) => interview.candidate)
+  @OneToMany(() => Interview, (interview) => interview.candidate)
   @JoinColumn()
   public interviews!: Interview[];
 

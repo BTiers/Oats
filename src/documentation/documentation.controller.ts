@@ -1,5 +1,4 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { getRepository } from 'typeorm';
 
 import * as swaggerJSDoc  from 'swagger-jsdoc';
 
@@ -44,15 +43,15 @@ class DocumentationController implements Controller {
     this.router.get(`${this.path}/latest`, this.getLatestDocumentation);
   }
 
-  private getSwaggerDocument = async (request: Request, response: Response, next: NextFunction) => {
+  private getSwaggerDocument = async (_: Request, response: Response, __: NextFunction) => {
     response.setHeader('Content-Type', 'application/json');
     response.send(this.swaggerSpec);
   };
 
   private getLatestDocumentation = async (
-    request: Request,
+    _: Request,
     response: Response,
-    next: NextFunction,
+    __: NextFunction,
   ) => {
     response.sendFile(`${__dirname}/documentation.redoc.html`);
   };
