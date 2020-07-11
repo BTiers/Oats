@@ -9,8 +9,8 @@ export class setupFtsClients1588071386839 implements MigrationInterface {
     
     SET "documentWithWeights" = setweight(to_tsvector(name), 'A') || setweight(to_tsvector(phone), 'B');
 
-    CREATE INDEX document_weights_idx ON client USING GIN ("documentWithWeights");
-    CREATE FUNCTION client_tsvector_trigger() RETURNS trigger AS $$
+    CREATE INDEX IF NOT EXISTS document_weights_idx ON client USING GIN ("documentWithWeights");
+    CREATE OR REPLACE FUNCTION client_tsvector_trigger() RETURNS trigger AS $$
         begin
             new."documentWithWeights" := 
                 setweight(to_tsvector('english', coalesce(new.name, '')), 'A') ||

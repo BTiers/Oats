@@ -7,14 +7,15 @@ export class setupFtsUsers1588081112933 implements MigrationInterface {
             ADD COLUMN IF NOT EXISTS "documentWithWeights" tsvector;
         UPDATE "user"
         
-        SET "documentWithWeights" = setweight(to_tsvector(name), 'A') || setweight(to_tsvector(slug), 'B');
+        SET "documentWithWeights" = setweight(to_tsvector("firstName"), 'A') || setweight(to_tsvector("lastName"), 'B') || setweight(to_tsvector(slug), 'C');
     
         CREATE INDEX user_document_weights_idx ON "user" USING GIN ("documentWithWeights");
-        CREATE FUNCTION user_tsvector_trigger() RETURNS trigger AS $$
+        CREATE OR REPLACE FUNCTION user_tsvector_trigger() RETURNS trigger AS $$
             begin
                 new."documentWithWeights" := 
-                    setweight(to_tsvector('english', coalesce(new.name, '')), 'A') ||
-                    setweight(to_tsvector('english', coalesce(new.slug, '')), 'B');
+                    setweight(to_tsvector('english', coalesce(new."firstName", '')), 'A') ||
+                    setweight(to_tsvector('english', coalesce(new."lastName", '')), 'B') ||
+                    setweight(to_tsvector('english', coalesce(new.slug, '')), 'C');
                 return new;
             end
         $$ LANGUAGE plpgsql;

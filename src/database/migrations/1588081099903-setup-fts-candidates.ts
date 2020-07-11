@@ -9,8 +9,8 @@ export class setupFtsCandidates1588081099903 implements MigrationInterface {
         
         SET "documentWithWeights" = setweight(to_tsvector(name), 'A') || setweight(to_tsvector(resume), 'B');
     
-        CREATE INDEX candidate_document_weights_idx ON candidate USING GIN ("documentWithWeights");
-        CREATE FUNCTION candidate_tsvector_trigger() RETURNS trigger AS $$
+        CREATE INDEX IF NOT EXISTS candidate_document_weights_idx ON candidate USING GIN ("documentWithWeights");
+        CREATE OR REPLACE FUNCTION candidate_tsvector_trigger() RETURNS trigger AS $$
             begin
                 new."documentWithWeights" := 
                     setweight(to_tsvector('english', coalesce(new.name, '')), 'A') ||

@@ -9,11 +9,12 @@ define(User, (faker: typeof Faker) => {
   const email = faker.internet.email(firstName, lastName);
 
   const user = new User();
-  user.name = `${firstName} ${lastName}`;
+  user.firstName = firstName;
+  user.lastName = lastName;
   user.email = email;
   user.password = faker.random.word();
 
-  console.log(user.email, user.name, user.password);
+  console.log(user.email, user.firstName, user.lastName, user.password);
 
   return user;
 });
