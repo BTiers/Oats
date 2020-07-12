@@ -312,7 +312,7 @@ class CandidateController implements Controller {
     if (total === 0) {
       response.send({
         offers: [],
-        metadata: pagination.emptyMetadata,
+        metadata: pagination.metadata,
       });
       return;
     }

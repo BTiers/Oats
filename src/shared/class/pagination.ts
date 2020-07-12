@@ -28,7 +28,9 @@ export default class Pagination {
   get exceedPageLimitHint(): string {
     return `Page n°${this.page} cannot be found with ${this.perPage} items per page.
     Last available page can be retrieved here:
-    ${this.resourcePath}?page=${this.pageCount - 1}&perPage=${this.perPage}${this.additionalParams || ''}`;
+    ${this.resourcePath}?page=${this.pageCount - 1}&perPage=${this.perPage}${
+      this.additionalParams || ''
+    }`;
   }
 
   get pageCount(): number {
@@ -44,59 +46,49 @@ export default class Pagination {
   }
 
   get selfPageLink(): string {
-    return `${this.resourcePath}?page=${this.page}&perPage=${this.perPage}`;
+    return `${this.resourcePath}?page=${this.page}&perPage=${this.perPage}${
+      this.additionalParams || ''
+    }`;
   }
 
   get firstPageLink(): string {
-    return `${this.resourcePath}?page=0&perPage=${this.perPage}`;
+    return `${this.resourcePath}?page=0&perPage=${this.perPage}${this.additionalParams || ''}`;
   }
 
   get nextPageLink(): string | null {
     return this.page + 1 >= this.pageCount
       ? null
-      : `${this.resourcePath}?page=${this.page + 1}&perPage=${this.perPage}`;
+      : `${this.resourcePath}?page=${this.page + 1}&perPage=${this.perPage}${
+          this.additionalParams || ''
+        }`;
   }
 
   get previousPageLink(): string | null {
     return this.page === 0
       ? null
-      : `${this.resourcePath}?page=${this.page - 1}&perPage=${this.perPage}`;
+      : `${this.resourcePath}?page=${this.page - 1}&perPage=${this.perPage}${
+          this.additionalParams || ''
+        }`;
   }
 
   get lastPageLink(): string {
     return `${this.resourcePath}?page=${
       this.pageCount > 0 ? this.pageCount - 1 : this.pageCount
-    }&perPage=${this.perPage}`;
+    }&perPage=${this.perPage}${this.additionalParams || ''}`;
   }
 
   get metadata(): PaginationMetadata {
     return {
       page: this.page,
       perPage: this.perPage,
-      pageCount: this.pageCount,
+      pageCount: this.pageCount || 1,
       totalItems: this.total,
       links: {
-        self: `${this.selfPageLink}${this.additionalParams || ''}`,
-        first: `${this.firstPageLink}${this.additionalParams || ''}`,
-        previous: `${this.previousPageLink}${this.additionalParams || ''}`,
-        next: `${this.nextPageLink}${this.additionalParams || ''}`,
-        last: `${this.lastPageLink}${this.additionalParams || ''}`,
-      },
-    };
-  }
-
-  get emptyMetadata(): PaginationMetadata {
-    return {
-      page: 0,
-      perPage: this.perPage,
-      pageCount: 1,
-      totalItems: 0,
-      links: {
-        self: `${this.selfPageLink}${this.additionalParams || ''}`,
-        first: `${this.firstPageLink}${this.additionalParams || ''}`,
-        previous: null,
-        next: null,
-        last: `${this.lastPageLink}${this.additionalParams || ''}`,
+        self: this.selfPageLink,
+        first: this.firstPageLink,
+        previous: this.previousPageLink,
+        next: this.nextPageLink,
+        last: this.lastPageLink,
       },
     };
   }
