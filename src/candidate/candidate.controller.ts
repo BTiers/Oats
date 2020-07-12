@@ -3,7 +3,6 @@ import { getRepository, FindManyOptions } from 'typeorm';
 import { plainToClass } from 'class-transformer';
 
 import Controller from '../shared/interfaces/controller.interface';
-import { PaginationMetadata } from '../shared/interfaces/pagination.interface';
 
 import authenticationMiddleware from '../middleware/authentication.middleware';
 import queryValidationMiddleware from '../middleware/query-validation.middleware';

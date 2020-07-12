@@ -5,7 +5,6 @@ import { plainToClass } from 'class-transformer';
 import slugify from 'slugify';
 
 import Controller from '../shared/interfaces/controller.interface';
-import { PaginationMetadata } from '../shared/interfaces/pagination.interface';
 
 import authenticationMiddleware from '../middleware/authentication.middleware';
 import validationMiddleware from '../middleware/validation.middleware';

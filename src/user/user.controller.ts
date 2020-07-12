@@ -4,7 +4,6 @@ import { plainToClass } from 'class-transformer';
 
 import Controller from '../shared/interfaces/controller.interface';
 import RequestWithUser from '../shared/interfaces/request-with-user.interface';
-import { PaginationMetadata } from '../shared/interfaces/pagination.interface';
 
 import authenticationMiddleware from '../middleware/authentication.middleware';
 import queryValidationMiddleware from '../middleware/query-validation.middleware';
