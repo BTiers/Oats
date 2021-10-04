@@ -1,25 +1,31 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { getRepository } from 'typeorm';
+import { getRepository, FindManyOptions } from 'typeorm';
+import { plainToClass } from 'class-transformer';
+
 import slugify from 'slugify';
 
 import Controller from '../shared/interfaces/controller.interface';
 
-import authMiddleware from '../middleware/auth.middleware';
+import authenticationMiddleware from '../middleware/authentication.middleware';
 import validationMiddleware from '../middleware/validation.middleware';
 import queryValidationMiddleware from '../middleware/query-validation.middleware';
 
 import Client from './client.entity';
 import User from '../user/user.entity';
 
-import filterToSQL from '../shared/filter-to-sql';
-import criteriaToSQL from '../shared/criteria-to-sql';
-
-import { CreateClientDto, FilterClientDto } from './client.dto';
+import { CreateClientDto, ClientFilterParams } from './client.dto';
 
 import ClientNotFoundException from '../exceptions/ClientNotFoundException';
 import UserNotFoundException from '../exceptions/UserNotFoundException';
 import ClientAlreadyExistsException from '../exceptions/ClientAlreadyExistsException';
-import FilterType from '../enums/filter-options.enum';
+import NoClientFoundException from '../exceptions/NoClientsFoundException';
+import ExceededPageIndexException from '../exceptions/ExceededPageIndexException';
+
+import { getFilter, StringFilterParam } from '../shared/validators/filters.validator';
+import Pagination from '../shared/class/pagination';
+
+import removeEmptyObjectEntries from '../utils/removeEmptyObjectEntries';
+import getFilterParams from '../utils/getFilterParams';
 
 class ClientController implements Controller {
   public path = '/clients';
@@ -98,10 +104,73 @@ class ClientController implements Controller {
      *        description: Number of offers the client currently have
      */
 
+    /**
+     * @swagger
+     * /clients:
+     *  get:
+     *    summary: All Clients
+     *    description: Get a list of all clients
+     *    security:
+     *      - bearerAuth: []
+     *    parameters:
+     *      - in: query
+     *        name: page
+     *        schema:
+     *          type: integer
+     *          default: 0
+     *        description: The page position (page * perPage).
+     *      - in: query
+     *        name: perPage
+     *        schema:
+     *          type: integer
+     *          minimum: 1
+     *          maximum: 100
+     *          default: 20
+     *        description: The number of items retrieved on each pages.
+     *      - in: query
+     *        name: name
+     *        schema:
+     *          type: object
+     *        description:
+     *          "<strong>Example:</strong> <code>name[filter]=equal&name[criterias][]=Crooks&name[criterias][]=Lindgren</code><br/><br/>
+     *          <code>filter</code>: <code>enum</code> [ <code>equal</code>, <code>not</code>, <code>isnull</code> ]<br/>
+     *          <i>Note</i> : If <code>isnull</code> is used, <code>criterias</code> is not expected to be present<br/><br/>
+     *          <code>criterias</code>: <code>string[]</code>"
+     *      - in: header
+     *        name: Authorization
+     *        schema:
+     *          description: The server set HTTPOnly cookie
+     *          type: string
+     *      - in: header
+     *        name: x-xsrf-token
+     *        schema:
+     *          description: The XSRFToken to refresh
+     *          type: string
+     *    tags:
+     *      - Clients (Authenticated only)
+     *    responses:
+     *      200:
+     *        description: All the clients
+     *        schema:
+     *          type: object
+     *          properties:
+     *            clients:
+     *              $ref: '#/definitions/Client'
+     *            metadata:
+     *              $ref: '#/definitions/PaginationMetadata'
+     *      401:
+     *        description: Wrong authentication token
+     *        schema:
+     *          $ref: '#/definitions/HTTPError'
+     *      500:
+     *        description: Internal Server Error
+     *        schema:
+     *          $ref: '#/definitions/HTTPError'
+     */
     this.router.get(
       `${this.path}`,
-      [queryValidationMiddleware(FilterClientDto), authMiddleware],
-      this.getAllClients,
+      [authenticationMiddleware, queryValidationMiddleware(ClientFilterParams)],
+      this.getAll,
     );
 
     /**
@@ -125,7 +194,7 @@ class ClientController implements Controller {
      *      - in: header
      *        name: Authorization
      *        schema:
-     *          description: The server set HTTPOnly cookie 
+     *          description: The server set HTTPOnly cookie
      *          type: string
      *      - in: header
      *        name: x-xsrf-token
@@ -150,7 +219,7 @@ class ClientController implements Controller {
      *        schema:
      *          $ref: '#/definitions/HTTPError'
      */
-    this.router.get(`${this.path}/:slug`, authMiddleware, this.getClientBySlug);
+    this.router.get(`${this.path}/:slug`, authenticationMiddleware, this.getOne);
 
     /**
      * @swagger
@@ -165,7 +234,7 @@ class ClientController implements Controller {
      *      - in: header
      *        name: Authorization
      *        schema:
-     *          description: The server set HTTPOnly cookie 
+     *          description: The server set HTTPOnly cookie
      *          type: string
      *      - in: header
      *        name: x-xsrf-token
@@ -217,7 +286,7 @@ class ClientController implements Controller {
      */
     this.router.post(
       `${this.path}`,
-      [validationMiddleware(CreateClientDto), authMiddleware],
+      [validationMiddleware(CreateClientDto), authenticationMiddleware],
       this.postClient,
     );
 
@@ -240,7 +309,7 @@ class ClientController implements Controller {
      *      - in: header
      *        name: Authorization
      *        schema:
-     *          description: The server set HTTPOnly cookie 
+     *          description: The server set HTTPOnly cookie
      *          type: string
      *      - in: header
      *        name: x-xsrf-token
@@ -265,50 +334,10 @@ class ClientController implements Controller {
      *        schema:
      *          $ref: '#/definitions/HTTPError'
      */
-    this.router.delete(`${this.path}/:slug`, authMiddleware, this.deleteClient);
+    this.router.delete(`${this.path}/:slug`, authenticationMiddleware, this.deleteClient);
   }
 
-  private async buildQueryFromFilters(filterOptions: FilterClientDto) {
-    let query = this.clientRepository
-      .createQueryBuilder('client')
-      .select()
-      .leftJoinAndSelect('client.offers', 'offers')
-      .leftJoinAndSelect('client.accountManager', 'accountManager');
-
-    Object.entries(filterOptions).forEach(
-      (
-        [key, value]: [
-          String,
-          {
-            filter: FilterType;
-            criteria: String;
-          },
-        ],
-        index,
-      ) => {
-        if (index === 0)
-          query = query.where(`client."${key}" ${filterToSQL(value.filter, index)}`, {
-            [`criteria${index}`]: criteriaToSQL(value.filter, value.criteria),
-          });
-        else
-          query = query.andWhere(`client."${key}" ${filterToSQL(value.filter, index)}`, {
-            [`criteria${index}`]: criteriaToSQL(value.filter, value.criteria),
-          });
-      },
-    );
-
-    return query.getMany();
-  }
-
-  private getAllClients = async (request: Request, response: Response, next: NextFunction) => {
-    const filterOptions: FilterClientDto = request.query;
-
-    const clients = await this.buildQueryFromFilters(filterOptions);
-
-    response.send(clients);
-  };
-
-  private getClientBySlug = async (request: Request, response: Response, next: NextFunction) => {
+  private getOne = async (request: Request, response: Response, next: NextFunction) => {
     const slug = request.params.slug;
     const client = await this.clientRepository.findOne(
       { slug },
@@ -320,6 +349,51 @@ class ClientController implements Controller {
     } else {
       next(new ClientNotFoundException(slug));
     }
+  };
+
+  private buildFieldsOptions = (filters: ClientFilterParams): FindManyOptions<Client> => {
+    const { name } = filters;
+    const { order } = filters;
+
+    const options: FindManyOptions<Client> = {
+      where: {
+        name: getFilter(plainToClass(StringFilterParam, name)),
+      },
+      order: order,
+    };
+
+    return removeEmptyObjectEntries(options);
+  };
+
+  private getAll = async (request: Request, response: Response, next: NextFunction) => {
+    let { perPage = 20, page = 0 } = request.query; // Pagination related queryParams
+    //    const { q: fullTextSearch } = request.query; // Full text search related query Params
+
+    const filterOptions = this.buildFieldsOptions((request.query as unknown) as ClientFilterParams);
+
+    const total = await this.clientRepository.count(filterOptions);
+    const otherParams = getFilterParams(request.originalUrl, this.path);
+    const pagination = new Pagination(this.path, Number(page), Number(perPage), total, otherParams);
+
+    if (total === 0) {
+      response.send({
+        offers: [],
+        metadata: pagination.metadata,
+      });
+      return;
+    }
+
+    if (pagination.exceedPageLimit)
+      return next(new ExceededPageIndexException(pagination.exceedPageLimitHint));
+
+    const clients = await this.clientRepository.find({
+      ...filterOptions,
+      take: pagination.take,
+      skip: pagination.skip,
+    });
+
+    if (clients && clients.length) response.send({ clients, metadata: pagination.metadata });
+    else next(new NoClientFoundException('No clients are available with current filters'));
   };
 
   private postClient = async (request: Request, response: Response, next: NextFunction) => {
@@ -354,7 +428,7 @@ class ClientController implements Controller {
 
     if (client) {
       const result = await this.clientRepository.delete({ slug });
-      console.log(result)
+      console.log(result);
       response.status(200).send();
     } else {
       next(new ClientNotFoundException(slug));

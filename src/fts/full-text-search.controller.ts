@@ -3,7 +3,7 @@ import { getRepository, Repository } from 'typeorm';
 
 import Controller from '../shared/interfaces/controller.interface';
 
-import authMiddleware from '../middleware/auth.middleware';
+import authenticationMiddleware from '../middleware/authentication.middleware';
 
 import Client from '../client/client.entity';
 import User from '../user/user.entity';
@@ -24,7 +24,7 @@ class FTSController implements Controller {
   }
 
   private initializeRoutes() {
-    this.router.get(`${this.path}/:search`, authMiddleware, this.getFTSMatches);
+    this.router.get(`${this.path}/:search`, authenticationMiddleware, this.getFTSMatches);
   }
 
   private getFTS = async <T>(repository: Repository<T>, search: string): Promise<T[]> => {

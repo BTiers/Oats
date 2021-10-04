@@ -3,7 +3,7 @@ import { getRepository } from 'typeorm';
 
 import Controller from '../shared/interfaces/controller.interface';
 
-import authMiddleware from '../middleware/auth.middleware';
+import authenticationMiddleware from '../middleware/authentication.middleware';
 
 import Candidate from '../candidate/candidate.entity';
 import Client from '../client/client.entity';
@@ -25,12 +25,12 @@ class AnalyticsController implements Controller {
   private initializeRoutes() {
     this.router.get(
       `${this.path}/candidate-acquisition-over-time`,
-      authMiddleware,
+      authenticationMiddleware,
       this.getCandidateAcquisitionOverTime,
     );
     this.router.get(
       `${this.path}/client-acquisition-over-time`,
-      authMiddleware,
+      authenticationMiddleware,
       this.getClientAcquisitionOverTime,
     );
   }

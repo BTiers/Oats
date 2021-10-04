@@ -3,13 +3,13 @@ import { getRepository, FindManyOptions, Not } from 'typeorm';
 import { plainToClass } from 'class-transformer';
 
 import Controller from '../shared/interfaces/controller.interface';
-import { PaginationMetadata } from '../shared/interfaces/pagination.interface';
 
-import authMiddleware from '../middleware/auth.middleware';
+import authenticationMiddleware from '../middleware/authentication.middleware';
 import queryValidationMiddleware from '../middleware/query-validation.middleware';
 
 import Offer from './offer.entity';
-import { FilterOfferParams } from './offer.dto';
+
+import { OfferFilterParams } from './offer.dto';
 
 import OfferNotFoundException from '../exceptions/OfferNotFoundException';
 import NoOffersFoundException from '../exceptions/NoOffersFoundException';
@@ -20,6 +20,7 @@ import {
   StringFilterParam,
   NumberFilterParam,
 } from '../shared/validators/filters.validator';
+import Pagination from '../shared/class/pagination';
 
 import removeEmptyObjectEntries from '../utils/removeEmptyObjectEntries';
 import getFilterParams from '../utils/getFilterParams';
@@ -39,6 +40,7 @@ class OfferController implements Controller {
      * @swagger
      * definitions:
      *  Offer:
+     *    description: Representation of an Offer entity
      *    properties:
      *      id:
      *        type: number
@@ -71,6 +73,7 @@ class OfferController implements Controller {
      * @swagger
      * definitions:
      *  OfferWithOwners:
+     *    description: Representation of an Offer entity with Client & User relations
      *    properties:
      *      id:
      *        type: number
@@ -107,6 +110,7 @@ class OfferController implements Controller {
      * @swagger
      * definitions:
      *  OfferWithRelations:
+     *    description: Representation of an Offer entity with Client & User & Candidate relations
      *    properties:
      *      id:
      *        type: number
@@ -214,7 +218,7 @@ class OfferController implements Controller {
      *          type: object
      *          properties:
      *            offers:
-     *              $ref: '#/definitions/OfferWithOwners'
+     *              $ref: '#/definitions/Offer'
      *            metadata:
      *              $ref: '#/definitions/PaginationMetadata'
      *      401:
@@ -228,7 +232,7 @@ class OfferController implements Controller {
      */
     this.router.get(
       `${this.path}`,
-      [authMiddleware, queryValidationMiddleware(FilterOfferParams)],
+      [authenticationMiddleware, queryValidationMiddleware(OfferFilterParams)],
       this.getAll,
     );
 
@@ -279,7 +283,7 @@ class OfferController implements Controller {
      *        schema:
      *          $ref: '#/definitions/HTTPError'
      */
-    this.router.get(`${this.path}/:slug`, authMiddleware, this.getOne);
+    this.router.get(`${this.path}/:slug`, authenticationMiddleware, this.getOne);
   }
 
   private getOne = async (request: Request, response: Response, next: NextFunction) => {
@@ -296,7 +300,7 @@ class OfferController implements Controller {
     }
   };
 
-  private buildFieldsOptions = (filters: FilterOfferParams): FindManyOptions<Offer> => {
+  private buildFieldsOptions = (filters: OfferFilterParams): FindManyOptions<Offer> => {
     const { job, annualSalary, contractType } = filters;
     const { order } = filters;
 
@@ -316,74 +320,31 @@ class OfferController implements Controller {
     let { perPage = 20, page = 0 } = request.query; // Pagination related queryParams
     //    const { q: fullTextSearch } = request.query; // Full text search related query Params
 
-    perPage = Number(perPage);
-    page = Number(page);
-
-    const take = perPage;
-    const skip = page * take;
-
-    const filterOptions = this.buildFieldsOptions((request.query as unknown) as FilterOfferParams);
+    const filterOptions = this.buildFieldsOptions((request.query as unknown) as OfferFilterParams);
 
     const total = await this.offerRepository.count(filterOptions);
-    const pageCount = Math.ceil(total / take);
-
     const otherParams = getFilterParams(request.originalUrl, this.path);
+    const pagination = new Pagination(this.path, Number(page), Number(perPage), total, otherParams);
 
     if (total === 0) {
       response.send({
         offers: [],
-        metadata: {
-          page: 0,
-          perPage,
-          pageCount: 1,
-          totalItems: 0,
-          links: {
-            self: `/offers?page=0&perPage=${perPage}${otherParams}`,
-            first: `/offers?page=0&perPage=${perPage}${otherParams}`,
-            previous: null,
-            next: null,
-            last: `/offers?page=0&perPage=${perPage}${otherParams}`,
-          },
-        },
+        metadata: pagination.metadata,
       });
       return;
     }
 
-    if (page > pageCount)
-      return next(
-        new ExceededPageIndexException(
-          `Page n°${page} cannot be found with ${perPage} items per page.
-          Last available page can be retrieved here:
-          /offers?page=${pageCount - 1}&perPage=${perPage}${otherParams}`,
-        ),
-      );
+    if (pagination.exceedPageLimit)
+      return next(new ExceededPageIndexException(pagination.exceedPageLimitHint));
 
     const offers = await this.offerRepository.find({
-      relations: ['owner', 'referrer'],
       ...filterOptions,
-      take,
-      skip,
+      take: pagination.take,
+      skip: pagination.skip,
     });
 
-    if (offers && offers.length) {
-      const metadata: PaginationMetadata = {
-        page: page,
-        perPage: take,
-        pageCount,
-        totalItems: total,
-        links: {
-          self: `/offers?page=${page}&perPage=${perPage}${otherParams}`,
-          first: `/offers?page=0&perPage=${perPage}${otherParams}`,
-          previous: page === 0 ? null : `/offers?page=${page - 1}&perPage=${perPage}${otherParams}`,
-          next: page + 1 >= pageCount ? null : `/offers?page=${page + 1}&perPage=${perPage}${otherParams}`,
-          last: `/offers?page=${pageCount > 0 ? pageCount - 1 : pageCount}&perPage=${perPage}${otherParams}`,
-        },
-      };
-
-      response.send({ offers, metadata });
-    } else {
-      next(new NoOffersFoundException('No offers are available with current filters'));
-    }
+    if (offers && offers.length) response.send({ offers, metadata: pagination.metadata });
+    else next(new NoOffersFoundException('No offers are available with current filters'));
   };
 }
 

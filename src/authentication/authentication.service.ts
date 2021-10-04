@@ -6,7 +6,7 @@ import UserWithThatEmailAlreadyExistsException from '../exceptions/UserWithThatE
 
 import { XSRFTokenData, Token, RefreshTokenData } from '../shared/interfaces/token.interface';
 
-import CreateUserDto from '../user/user.dto';
+import { CreateUserDto } from '../user/user.dto';
 import User from '../user/user.entity';
 
 class AuthenticationService {

@@ -2,7 +2,7 @@
  * @swagger
  * definitions:
  *  PaginationMetadataLinks:
- *    description: All links include the same query parameters that were passed
+ *    description: All necessary links (including the same query parameters that were passed)
  *    properties:
  *      self:
  *        type: string
@@ -35,6 +35,7 @@ interface PaginationLinks {
  * @swagger
  * definitions:
  *  PaginationMetadata:
+ *    description: Provides all the necessary values to navigate through a paginated resource
  *    properties:
  *      page:
  *        type: number

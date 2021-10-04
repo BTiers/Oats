@@ -30,13 +30,13 @@ class CandidateToOffer {
   })
   public status!: string;
 
-  @OneToMany((type) => ProcessArchive, (processArchive) => processArchive.process)
+  @OneToMany(() => ProcessArchive, (processArchive) => processArchive.process)
   public archives!: ProcessArchive[];
 
-  @ManyToOne((type) => Candidate, (candidate) => candidate.processes)
+  @ManyToOne(() => Candidate, (candidate) => candidate.processes)
   public candidate!: Candidate;
 
-  @ManyToOne((type) => Offer, (offer) => offer.candidates)
+  @ManyToOne(() => Offer, (offer) => offer.candidates)
   public offer!: Offer;
 
   @CreateDateColumn()
